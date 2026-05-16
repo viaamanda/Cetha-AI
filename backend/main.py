@@ -11,7 +11,7 @@ app.include_router(ocr_router,        prefix="/api/ocr",        tags=["OCR"])
 app.include_router(dashboard_router,  prefix="/api/dashboard",  tags=["Dashboard"])
 app.include_router(kategorisasi_router, prefix="/api/kategorisasi", tags=["Kategorisasi"])
 app.include_router(smartinsight_router, prefix="/api/insight",  tags=["Smart Insight"])
-app.include_router(saranstok_router,  prefix="/api/stok",       tags=["Saran Stok"])
+app.include_router(saranskot_router,  prefix="/api/stok",       tags=["Saran Stok"])
 
 @app.get("/")
 def root():

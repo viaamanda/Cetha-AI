@@ -1,36 +1,45 @@
-def categorize_item(item_name):
+# app/ai/categorization.py
+import json
+import google.generativeai as genai
+from app.core.config import settings
 
-    item = item_name.lower()
+genai.configure(api_key=settings.GEMINI_API_KEY)
 
-    food_keywords = [
-        "mie",
-        "nasi",
-        "kopi",
-        "teh",
-        "roti",
-        "ayam"
-    ]
+# Kategori sesuai proposal Cetha AI
+VALID_CATEGORIES = [
+    "Bahan Baku",
+    "Operasional", 
+    "Transportasi",
+    "Gaji",
+    "Pemasaran",
+    "Peralatan",
+    "Lainnya"
+]
 
-    transport_keywords = [
-        "bensin",
-        "pertalite",
-        "parkir",
-        "grab",
-        "gojek"
-    ]
+def categorize_item(item_name: str) -> str:
+    """Kategorisasi satu item menggunakan Gemini."""
+    if not item_name.strip():
+        return "Lainnya"
 
-    health_keywords = [
-        "obat",
-        "vitamin"
-    ]
+    prompt = f"""
+    Kategorikan item belanja UMKM berikut ke salah satu kategori ini:
+    {", ".join(VALID_CATEGORIES)}
 
-    if any(word in item for word in food_keywords):
-        return "Makanan"
+    Item: "{item_name}"
 
-    elif any(word in item for word in transport_keywords):
-        return "Transportasi"
+    Kembalikan HANYA nama kategorinya saja, tanpa penjelasan.
+    Contoh output: Bahan Baku
+    """
 
-    elif any(word in item for word in health_keywords):
-        return "Kesehatan"
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        result = response.text.strip()
 
-    return "Lainnya"
+        # Validasi output harus salah satu dari kategori yang valid
+        if result in VALID_CATEGORIES:
+            return result
+        return "Lainnya"
+
+    except Exception:
+        return "Lainnya"

@@ -25,14 +25,14 @@ except (ImportError, ModuleNotFoundError):
     from core.config import settings
 
 # Configure Gemini
+# ✅ Ambil dari settings saja
 api_key = settings.GEMINI_API_KEY
 if not api_key:
-    # Use a fallback if not in env
-    api_key = "AIzaSyBUlT0fvskUixnR3iHCKuBq4B8k8tWx6XE"
+    raise ValueError("GEMINI_API_KEY belum diset di file .env")
 
 genai.configure(api_key=api_key)
 
-model = genai.GenerativeModel("gemini-3-flash-preview")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 def extract_financial_data(ocr_text):
     """Extract financial transaction data from OCR text using Gemini."""
@@ -124,3 +124,27 @@ if __name__ == "__main__":
         print(json.dumps(categorized, indent=2))
     except Exception as e:
         print(f"Error during test: {e}")
+
+from collections import defaultdict
+
+def calculate_category_totals(transactions: list) -> dict:
+    """Hitung total pengeluaran per kategori dari list transaksi."""
+    totals = defaultdict(int)
+    for trx in transactions:
+        category = trx.get("category", "Lainnya")
+        amount = trx.get("amount", 0)
+        totals[category] += amount
+    return dict(totals)
+
+def get_highest_category(totals: dict) -> dict:
+    """Ambil kategori dengan pengeluaran tertinggi."""
+    if not totals:
+        return {"category": "-", "amount": 0}
+    highest = max(totals, key=totals.get)
+    return {"category": highest, "amount": totals[highest]}
+
+def generate_trend_insight(highest: dict) -> str:
+    """Generate kalimat insight dari kategori tertinggi."""
+    category = highest["category"]
+    amount = highest["amount"]
+    return f"Kategori pengeluaran terbesar adalah {category} dengan total Rp {amount:,}"
